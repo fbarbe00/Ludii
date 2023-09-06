@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/AI.iml" filepath="$PROJECT_DIR$/AI.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Common.iml" filepath="$PROJECT_DIR$/Common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Core.iml" filepath="$PROJECT_DIR$/Core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Evaluation.iml" filepath="$PROJECT_DIR$/Evaluation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Features.iml" filepath="$PROJECT_DIR$/Features.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Generation.iml" filepath="$PROJECT_DIR$/Generation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Language.iml" filepath="$PROJECT_DIR$/Language.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LudiiDocGen.iml" filepath="$PROJECT_DIR$/LudiiDocGen.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Manager.iml" filepath="$PROJECT_DIR$/Manager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Mining.iml" filepath="$PROJECT_DIR$/Mining.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Player.iml" filepath="$PROJECT_DIR$/Player.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PlayerDesktop.iml" filepath="$PROJECT_DIR$/PlayerDesktop.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ViewController.iml" filepath="$PROJECT_DIR$/ViewController.iml" />
+    </modules>
+  </component>
+</project>

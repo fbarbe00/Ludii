@@ -1,7 +1,6 @@
 /.metadata/
 *.DS_Store*
 /.recommenders/*
-*.idea
 *__pycache__
 PlayerDesktop/ludii.trial
 *.iml

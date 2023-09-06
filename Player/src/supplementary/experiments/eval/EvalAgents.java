@@ -78,9 +78,6 @@ public class EvalAgents
 	/** Whether we want to output data for alpha-rank */
 	protected boolean outputAlphaRankData;
 	
-	/** Whether we want to output all raw results */
-	protected boolean outputRawResults;
-	
 	/** Whether we want to print general messages to System.out */
 	protected boolean printOut;
 	
@@ -159,7 +156,6 @@ public class EvalAgents
 				.setRoundToNextPermutationsDivisor(roundToNextPermutationsDivisor)
 				.setOutDir(outDir)
 				.setOutputAlphaRankData(outputAlphaRankData)
-				.setOutputRawResults(outputRawResults)
 				.setOutputSummary(outputSummary)
 				.setPrintOut(printOut)
 				.setSuppressDivisorWarning(suppressDivisorWarning);
@@ -277,11 +273,6 @@ public class EvalAgents
 				.withType(OptionTypes.Boolean)
 				.withNumVals(0));
 		argParse.addOption(new ArgOption()
-				.withNames("--output-raw-results")
-				.help("Output all raw results.")
-				.withType(OptionTypes.Boolean)
-				.withNumVals(0));
-		argParse.addOption(new ArgOption()
 				.withNames("--no-print-out")
 				.help("Suppress general prints to System.out.")
 				.withType(OptionTypes.Boolean)
@@ -338,7 +329,6 @@ public class EvalAgents
 		
 		eval.outputSummary = argParse.getValueBool("--output-summary");
 		eval.outputAlphaRankData = argParse.getValueBool("--output-alpha-rank-data");
-		eval.outputRawResults = argParse.getValueBool("--output-raw-results");
 		eval.printOut = !argParse.getValueBool("--no-print-out");
 		eval.suppressDivisorWarning = argParse.getValueBool("--suppress-divisor-warning");
 		

@@ -30,8 +30,6 @@ public final class CountRulesetsDone
 	{
 		int count = 0;
 		int countOptionCombinations = 0;
-		int countGame = 0;
-		int countRulesetsPerGame = 0;
 		
 		final String[] gameNames = FileHandling.listGames();
 
@@ -58,7 +56,7 @@ public final class CountRulesetsDone
 			
 			if (gameName.replaceAll(Pattern.quote("\\"), "/").contains("reconstruction/validation/"))
 				continue;
-			
+
 			final Game game = GameLoader.loadGameFromName(gameName);
 			final List<Ruleset> rulesetsInGame = game.description().rulesets();
 			
@@ -98,7 +96,6 @@ public final class CountRulesetsDone
 //								System.out.println(rulesetGame.name() + " RULESET + " + ruleset.heading());
 //							}
 						count++;
-						countRulesetsPerGame++;
 					}
 				}
 			}
@@ -111,12 +108,7 @@ public final class CountRulesetsDone
 //				System.out.println(game.name());
 //			}
 				count++;
-				countRulesetsPerGame++;
 			}
-
-			countGame++;
-			System.out.println(countGame + " - " + gameName + " NumRulesets = " + countRulesetsPerGame + " NumOptionCombinations = " + optionCombinations.size());
-			countRulesetsPerGame = 0;
 		}
 		
 		System.out.println(count + " rulesets implemented");
