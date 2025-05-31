@@ -1,0 +1,16 @@
+com/example/auth/Main$RegistrationSuccessResponse.class
+com/example/auth/Main$CreateGameRequest.class
+com/example/auth/GameSession.class
+com/example/auth/DatabaseService.class
+com/example/auth/Main$UserLoginRequest.class
+com/example/auth/LudiiGameService.class
+com/example/auth/GameEventsWebSocketHandler.class
+com/example/auth/Main$TokenResponse.class
+com/example/auth/Main$UserRegistrationRequest.class
+com/example/auth/User.class
+com/example/auth/AuthService.class
+com/example/auth/PlayerMoveRequest.class
+com/example/auth/JsonContext.class
+com/example/auth/Main$MessageResponse.class
+com/example/auth/Main$ErrorResponse.class
+com/example/auth/Main.class
