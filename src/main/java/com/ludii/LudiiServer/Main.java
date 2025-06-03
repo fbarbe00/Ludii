@@ -1,4 +1,4 @@
-package com.example.auth;
+package com.ludii.LudiiServer;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -30,7 +30,7 @@ public class Main {
 
         // WebSocket endpoint for game events
         // IMPORTANT: WebSocket mapping MUST be done before any HTTP route mapping or filters.
-        webSocket("/games/:gameId/events", GameEventsWebSocketHandler.class);
+        webSocket("/games/:gameId/events", com.ludii.LudiiServer.GameEventsWebSocketHandler.class);
 
         // --- API Endpoints ---
 
@@ -271,22 +271,27 @@ public class Main {
             }
 
             String gameName = createRequest.getGameName();
-            String ludiiGameString = ludiiGameService.getLudiiGameString(gameName);
-            if (ludiiGameString == null) {
-                res.status(404); return gson.toJson(new ErrorResponse("Ludii game definition not found: " + gameName));
+            // Step 1: Load the Ludii Game object
+            Object gameObj = ludiiGameService.loadGame(gameName); // Returns Game, but use Object if imports are conditional
+            if (gameObj == null) {
+                 res.status(404); return gson.toJson(new ErrorResponse("Ludii game could not be loaded: " + gameName));
             }
+            ludii.game.Game game = (ludii.game.Game) gameObj; // Cast to Ludii Game object
 
-            String initialStateJson = ludiiGameService.initializeGameAndGetInitialStateJson(gameName, ludiiGameString);
+            // Step 2: Initialize state using the Game object and get JsonContext string
+            String initialStateJson = ludiiGameService.initializeGameAndGetInitialStateJson(game);
             if (initialStateJson == null) {
-                res.status(500); return gson.toJson(new ErrorResponse("Failed to initialize game: " + gameName));
+                res.status(500); return gson.toJson(new ErrorResponse("Failed to initialize game state for: " + gameName));
             }
 
             User currentUser = authService.decodeTokenAndGetUser(token);
-            if (currentUser == null) { // Should not happen if validateToken passed, but good check
+            if (currentUser == null) {
                  res.status(401); return gson.toJson(new ErrorResponse("Unauthorized: User not found for token."));
             }
 
-            GameSession newSession = databaseService.createGameSession(createRequest.getGameName(), ludiiGameString, initialStateJson, currentUser.getId());
+            // Store gameName or a more complete game identifier if needed. For now, gameName is used.
+            // The ludii_game_string column in DB will store gameName, assuming GameLoader can reload from it.
+            GameSession newSession = databaseService.createGameSession(gameName, gameName, initialStateJson, currentUser.getId());
             if (newSession != null) {
                 res.status(201); return gson.toJson(newSession);
             } else {
@@ -432,34 +437,37 @@ public class Main {
                 res.status(500); return gson.toJson(new ErrorResponse("Could not parse current game state."));
             }
 
-            int playerMakingMoveId = -1; // Determine if P1 or P2 based on user ID
+            int playerMakingMoveId = -1;
             if(currentUser.getId() == session.getPlayer1Id()) playerMakingMoveId = 1;
             else if(session.getPlayer2Id() != null && currentUser.getId() == session.getPlayer2Id()) playerMakingMoveId = 2;
             else {
                 res.status(403); return gson.toJson(new ErrorResponse("Forbidden: You are not a player in this game."));
             }
 
-            if (currentJsonContext.getCurrentPlayer() != playerMakingMoveId) {
-                 res.status(400); return gson.toJson(new ErrorResponse("It is not your turn. Current player: " + currentJsonContext.getCurrentPlayer()));
+            // Server-side validation of whose turn it is, is implicitly handled by LudiiGameService.applyMove
+            // if it checks context.state().mover() against playerMakingMoveId which it should.
+            // The recreateLudiiContext will set the mover, and applyMoveLogic will verify it.
+
+            String newJsonStateString = ludiiGameService.applyMove(
+                    session.getGameName(),
+                    session.getCurrentStateJson(),
+                    moveRequest.getMove(),
+                    playerMakingMoveId
+            );
+
+            if (newJsonStateString == null) {
+                res.status(400); return gson.toJson(new ErrorResponse("Invalid move or failed to apply: " + moveRequest.getMove()));
             }
 
-            JsonContext updatedJsonContext = ludiiGameService.applyMove(currentJsonContext, moveRequest.getMove(), playerMakingMoveId);
+            JsonContext updatedParsedJsonContext = ludiiGameService.deserializeJsonContext(newJsonStateString);
+            String newStatus = (updatedParsedJsonContext != null && updatedParsedJsonContext.isTerminal()) ? "FINISHED" : "IN_PROGRESS";
 
-            if (updatedJsonContext == null) {
-                res.status(400); return gson.toJson(new ErrorResponse("Invalid move: " + moveRequest.getMove()));
-            }
-
-            String newStatus = updatedJsonContext.isTerminal() ? "FINISHED" : "IN_PROGRESS"; // Simplified status
-            // TODO: Determine winner if terminal, e.g. FINISHED_P1_WIN, FINISHED_P2_WIN, DRAW
-            // For now, just "FINISHED"
-
-            boolean dbUpdated = databaseService.updateGameSessionState(gameId, ludiiGameService.serializeJsonContext(updatedJsonContext), newStatus);
+            boolean dbUpdated = databaseService.updateGameSessionState(gameId, newJsonStateString, newStatus);
 
             if (dbUpdated) {
                 GameSession updatedSession = databaseService.findGameSessionById(gameId); // Fetch the final state
                 // Broadcast the update
                 JsonContext broadcastContext = ludiiGameService.deserializeJsonContext(updatedSession.getCurrentStateJson());
-                // Use Java 8 compatible map creation
                 java.util.Map<String, Object> payload = new java.util.HashMap<>();
                 payload.put("type", "GAME_STATE_UPDATE");
                 payload.put("data", broadcastContext);
@@ -505,30 +513,36 @@ public class Main {
             // Here, we could check if the authenticated user is the one whose turn it is,
             // or if the game settings allow AI to play for a specific player.
             // For now, let's assume AI plays for the current player in context.
-            int aiPlayerNumber = currentJsonContext.getCurrentPlayer();
+            int aiPlayerNumber = currentJsonContext.getCurrentPlayer(); // This is P1 or P2
 
-            String aiMoveString = ludiiGameService.generateAIMove(currentJsonContext);
+            String aiMoveString = ludiiGameService.generateAIMove(session.getGameName(), session.getCurrentStateJson());
             if (aiMoveString == null) {
-                res.status(400); // Or 500 if AI should always find a move
+                res.status(400);
                 return gson.toJson(new ErrorResponse("AI could not determine a move (game might be over or no legal moves)."));
             }
 
-            System.out.println("AI for player " + aiPlayerNumber + " selected move: " + aiMoveString);
-            JsonContext updatedJsonContext = ludiiGameService.applyMove(currentJsonContext, aiMoveString, aiPlayerNumber);
+            System.out.println("AI for player " + aiPlayerNumber + " intends to play move: " + aiMoveString);
 
-            if (updatedJsonContext == null) {
-                // This should ideally not happen if generateAIMove returns a valid move from legalMoves.
-                res.status(500); return gson.toJson(new ErrorResponse("AI made an invalid move: " + aiMoveString));
+            // Apply the AI's move
+            String newJsonStateStringAfterAIMove = ludiiGameService.applyMove(
+                    session.getGameName(),
+                    session.getCurrentStateJson(), // current state before AI move
+                    aiMoveString,
+                    aiPlayerNumber // The AI plays as the current player
+            );
+
+            if (newJsonStateStringAfterAIMove == null) {
+                res.status(500); return gson.toJson(new ErrorResponse("AI made an invalid move or failed to apply: " + aiMoveString));
             }
 
-            String newStatus = updatedJsonContext.isTerminal() ? "FINISHED" : "IN_PROGRESS";
-            boolean dbUpdated = databaseService.updateGameSessionState(gameId, ludiiGameService.serializeJsonContext(updatedJsonContext), newStatus);
+            JsonContext updatedParsedJsonContext = ludiiGameService.deserializeJsonContext(newJsonStateStringAfterAIMove);
+            String newStatus = (updatedParsedJsonContext != null && updatedParsedJsonContext.isTerminal()) ? "FINISHED" : "IN_PROGRESS";
+
+            boolean dbUpdated = databaseService.updateGameSessionState(gameId, newJsonStateStringAfterAIMove, newStatus);
 
             if (dbUpdated) {
                 GameSession updatedSession = databaseService.findGameSessionById(gameId);
-                // Broadcast the update
                 JsonContext broadcastContext = ludiiGameService.deserializeJsonContext(updatedSession.getCurrentStateJson());
-                // Use Java 8 compatible map creation
                 java.util.Map<String, Object> payload = new java.util.HashMap<>();
                 payload.put("type", "GAME_STATE_UPDATE");
                 payload.put("data", broadcastContext);

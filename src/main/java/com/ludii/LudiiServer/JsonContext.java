@@ -1,4 +1,4 @@
-package com.example.auth;
+package com.ludii.LudiiServer;
 
 import java.util.List;
 import java.util.Map;

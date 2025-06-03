@@ -1,4 +1,4 @@
-package com.example.auth;
+package com.ludii.LudiiServer;
 
 public class PlayerMoveRequest {
     private String move;

@@ -1,4 +1,4 @@
-package com.example.auth;
+package com.ludii.LudiiServer;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

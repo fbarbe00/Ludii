@@ -1,4 +1,4 @@
-package com.example.auth;
+package com.ludii.LudiiServer;
 
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;

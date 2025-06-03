@@ -5,11 +5,11 @@
     <title>Ludii Game Client</title>
     <style>
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f0f0f0; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
-        #controls, #game-area { margin-bottom: 20px; padding: 10px; background-color: #fff; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+        #controls, #game-area, #mock-controls { margin-bottom: 20px; padding: 10px; background-color: #fff; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
         #game-area { display: flex; flex-direction: column; align-items: center; }
         canvas { border: 1px solid black; }
         input[type="text"], input[type="password"] { margin-right: 5px; padding: 5px; }
-        button { padding: 5px 10px; }
+        button { padding: 5px 10px; margin-top: 5px; margin-right: 5px;}
         #jwt-display { margin-top: 10px; word-break: break-all; font-size: 0.8em; color: #555; max-width: 300px; }
         #ws-status { margin-top: 10px; font-style: italic; }
         .hidden { display: none; }
@@ -33,16 +33,32 @@
          <p><em>(After connecting via WebSocket, click cells on the board to make moves)</em></p>
     </div>
 
+    <div id="mock-controls">
+        <h2>Mock Game States (for testing rendering)</h2>
+        <button id="loadDefaultGridButton">Load Default Grid (3x3)</button>
+        <button id="loadLargerGridButton">Load Larger Grid (8x8)</button>
+        <button id="loadHexGridButton">Load Hex Grid</button>
+        <button id="loadGraphGameButton">Load Graph Game</button>
+        <button id="loadCardTestButton">Load Card Test</button>
+        <button id="loadDiceTestButton">Load Dice Test</button>
+        <button id="loadOverlayTestButton">Load Overlay Test</button>
+        <button id="loadUnsupportedGameButton">Load Unsupported Game</button>
+    </div>
+
     <div id="game-area">
         <h1 id="game-title">Ludii Game</h1>
         <div id="pixi-canvas-container"></div>
-        <p id="status-message">Please login and connect to a game.</p>
+        <p id="status-message">Please login and connect to a game, or load a mock state.</p>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.4.0/pixi.min.js"></script>
 
-    <script src="js/components.js"></script>
-    <script src="js/renderer.js"></script>
+    <script src="js/components.js"></script> <!-- Contains BoardRenderer, PieceRenderer -->
+    <script src="js/HexBoardRenderer.js"></script>
+    <script src="js/GraphBoardRenderer.js"></script>
+    <script src="js/CardRenderer.js"></script>
+    <script src="js/DieRenderer.js"></script>
+    <script src="js/renderer.js"></script> <!-- GameRenderer uses all above -->
     <script src="js/main.js"></script>
 </body>
 </html>

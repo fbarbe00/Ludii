@@ -1,4 +1,4 @@
-package com.example.auth;
+package com.ludii.LudiiServer;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
