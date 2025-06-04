@@ -10,9 +10,9 @@ This guide provides tips for common issues encountered during the setup, build, 
 
 ## Build Failures
 
-*   **`error reading /app/lib/ludii-core.jar; zip END header not found` (or similar for `args4j.jar`)**
-    *   **Cause:** This indicates that the specified JAR file in the `lib/` directory is either not a valid JAR file, is incomplete (corrupted download), or is a placeholder.
-    *   **Solution:** Ensure `ludii-core.jar` and `args4j.jar` in the `lib/` directory are valid, complete JAR files obtained from an official Ludii source (e.g., [Ludii GitHub Releases](https://github.com/Ludeme/Ludii/releases)). The `pom.xml` uses `systemPath` and expects these files to be physically present and correct.
+*   **`error reading /app/lib/ludii-core.jar; zip END header not found`**
+    *   **Cause:** This indicates that the `ludii-core.jar` file in the `lib/` directory is either not a valid JAR file, is incomplete (corrupted download), or is a placeholder.
+    *   **Solution:** Ensure `ludii-core.jar` in the `lib/` directory is a valid, complete JAR file obtained from an official Ludii source (e.g., [Ludii GitHub Releases](https://github.com/Ludeme/Ludii/releases)). The `pom.xml` uses `systemPath` and expects this file to be physically present and correct. (`args4j.jar` is no longer a direct project dependency).
 
 *   **"Cannot find symbol" or "package ... does not exist" errors for Ludii classes (e.g., `ludii.game.Game`)**
     *   **Cause:** This usually follows the JAR reading error mentioned above. If the Ludii JARs cannot be read, their classes are not available to the compiler. It can also occur if the `pom.xml` dependencies for Ludii JARs (with `systemPath`) are missing, commented out, or point to the wrong location.

@@ -1,64 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ludii Game Client</title>
-    <style>
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f0f0f0; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
-        #controls, #game-area, #mock-controls { margin-bottom: 20px; padding: 10px; background-color: #fff; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
-        #game-area { display: flex; flex-direction: column; align-items: center; }
-        canvas { border: 1px solid black; }
-        input[type="text"], input[type="password"] { margin-right: 5px; padding: 5px; }
-        button { padding: 5px 10px; margin-top: 5px; margin-right: 5px;}
-        #jwt-display { margin-top: 10px; word-break: break-all; font-size: 0.8em; color: #555; max-width: 300px; }
-        #ws-status { margin-top: 10px; font-style: italic; }
-        .hidden { display: none; }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div id="login-section">
-        <h2>Login</h2>
-        <input type="text" id="username" placeholder="Username" value="userws1">
-        <input type="password" id="password" placeholder="Password" value="passwordws1">
-        <button id="loginButton">Login</button>
-        <div id="login-status" style="color: red; margin-top: 5px;"></div>
-        <div id="jwt-display">JWT: (Not logged in)</div>
-    </div>
+    <header>
+        <h1>Ludii Online Gaming Platform</h1>
+        <nav>
+            <button id="profile-nav-button" class="hidden">Profile</button>
+            <button id="logout-button" class="hidden">Logout</button>
+        </nav>
+    </header>
 
-    <div id="game-controls-section" class="hidden">
-        <h2>Game Connection</h2>
-        <input type="text" id="gameIdInput" placeholder="Enter Game ID">
-        <button id="connectWsButton">Connect to Game WebSocket</button>
-        <div id="ws-status">WebSocket: Not Connected</div>
-         <p><em>(After connecting via WebSocket, click cells on the board to make moves)</em></p>
-    </div>
+    <main class="container">
+        <section id="login-section" class="view-section">
+            <h2>Login</h2>
+            <input type="text" id="username" placeholder="Username" value="userws1">
+            <input type="password" id="password" placeholder="Password" value="passwordws1">
+            <button id="loginButton">Login</button>
+            <div id="login-status"></div>
+            <div id="jwt-display">JWT: (Not logged in)</div>
+        </section>
 
-    <div id="mock-controls">
-        <h2>Mock Game States (for testing rendering)</h2>
-        <button id="loadDefaultGridButton">Load Default Grid (3x3)</button>
-        <button id="loadLargerGridButton">Load Larger Grid (8x8)</button>
-        <button id="loadHexGridButton">Load Hex Grid</button>
-        <button id="loadGraphGameButton">Load Graph Game</button>
-        <button id="loadCardTestButton">Load Card Test</button>
-        <button id="loadDiceTestButton">Load Dice Test</button>
-        <button id="loadOverlayTestButton">Load Overlay Test</button>
-        <button id="loadUnsupportedGameButton">Load Unsupported Game</button>
-    </div>
+        <section id="game-setup-area" class="view-section hidden">
+            <div id="game-list-section">
+                <h2>Available Games to Start</h2>
+                <div id="game-list-container">
+                    <p>Loading games...</p>
+                </div>
+            </div>
 
-    <div id="game-area">
-        <h1 id="game-title">Ludii Game</h1>
-        <div id="pixi-canvas-container"></div>
-        <p id="status-message">Please login and connect to a game, or load a mock state.</p>
-    </div>
+            <div id="game-options-section" class="hidden">
+                <h3 id="selected-game-name-title">Game Title</h3>
+                <p>Choose how you want to play:</p>
+                <button id="play-vs-ai-button">Play vs AI</button>
+                <button id="play-vs-player-button">Play vs Player</button>
+                <button id="analyze-game-button">Analyze Game</button>
+                <hr style="margin: 10px 0;">
+                <button id="back-to-game-list-button">Back to Game List</button>
+            </div>
+        </section>
+
+        <section id="game-active-section" class.="view-section hidden">
+             <h2 id="game-title-active">No Game Active</h2>
+            <div id="pixi-canvas-container"></div>
+            <p id="status-message">Welcome! Please login to see available games or connect to an existing one.</p>
+            <div id="game-connection-controls">
+                <h3>Join/Spectate Existing Game</h3>
+                <input type="text" id="gameIdInput" placeholder="Enter Game ID">
+                <button id="connectWsButton">Connect to Game Events</button>
+                <div id="ws-status">WebSocket: Not Connected</div>
+            </div>
+        </section>
+
+        <section id="profile-section" class="view-section hidden">
+            <h2>User Profile</h2>
+            <div class="profile-info">
+                <p>Username: <span id="profile-username"></span></p>
+                <p>ELO Rating: <span id="profile-elo">N/A (Feature coming soon!)</span></p>
+            </div>
+            <h3>Recently Played Games:</h3>
+            <div id="profile-recent-games">
+                <p>(Feature coming soon!)</p>
+                <!-- Later, this could be a list or table -->
+            </div>
+            <hr style="margin: 10px 0;">
+            <button id="profile-back-button">Back</button>
+        </section>
+
+        <section id="mock-controls" class="view-section hidden">
+            <h2>Mock Game States (for testing rendering)</h2>
+            <button id="loadDefaultGridButton">Load Default Grid (3x3)</button>
+            <button id="loadLargerGridButton">Load Larger Grid (8x8)</button>
+            <button id="loadHexGridButton">Load Hex Grid</button>
+            <button id="loadGraphGameButton">Load Graph Game</button>
+            <button id="loadCardTestButton">Load Card Test</button>
+            <button id="loadDiceTestButton">Load Dice Test</button>
+            <button id="loadOverlayTestButton">Load Overlay Test</button>
+            <button id="loadUnsupportedGameButton">Load Unsupported Game</button>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Ludii Game Platform</p>
+    </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.4.0/pixi.min.js"></script>
 
-    <script src="js/components.js"></script> <!-- Contains BoardRenderer, PieceRenderer -->
+    <script src="js/components.js"></script>
     <script src="js/HexBoardRenderer.js"></script>
     <script src="js/GraphBoardRenderer.js"></script>
     <script src="js/CardRenderer.js"></script>
     <script src="js/DieRenderer.js"></script>
-    <script src="js/renderer.js"></script> <!-- GameRenderer uses all above -->
+    <script src="js/renderer.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

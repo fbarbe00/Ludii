@@ -12,10 +12,10 @@ Before you begin, ensure you have the following installed:
 *   **Apache Maven:** Version 3.6 or later, for building the project.
 *   **PostgreSQL:** Version 10 or later.
 *   **Ludii JARs:**
-    *   `ludii-core.jar` (the main Ludii engine JAR)
-    *   `args4j.jar` (a dependency for Ludii's command-line interface, potentially bundled or needed by core)
-    *   **Important:** These JARs are **not** included in this repository due to licensing and distribution policies of Ludii. You must obtain them from an official Ludii release ([Ludii GitHub Releases](https://github.com/Ludeme/Ludii/releases)) or by building Ludii from its source code.
-    *   Once obtained, create a directory named `lib/` at the root of this project (at the same level as `src/`, `pom.xml`) and place these JAR files into it. The `pom.xml` is configured to look for them there using `systemPath`.
+    *   `ludii-core.jar` (the main Ludii engine JAR).
+    *   **Important:** This JAR is **not** included in this repository due to licensing and distribution policies of Ludii. You must obtain it from an official Ludii release ([Ludii GitHub Releases](https://github.com/Ludeme/Ludii/releases)) or by building Ludii from its source code.
+    *   Once obtained, create a directory named `lib/` at the root of this project (at the same level as `src/`, `pom.xml`) and place `ludii-core.jar` into it. The `pom.xml` is configured to look for it there using `systemPath`.
+    *   (`args4j.jar` was previously listed but is likely not a direct dependency for the server and has been removed from the project's direct requirements.)
 
 ## Database Setup
 
@@ -57,19 +57,26 @@ Please be aware that for this version of the server:
 
 ## Running the Server
 
-1.  **Ensure Ludii JARs are Present:** Verify that the `lib/` directory exists at the project root and contains the required `ludii-core.jar` and `args4j.jar` files. The server will not run correctly without these due to the `systemPath` dependencies in `pom.xml`.
-2.  **Execute the JAR:**
-    *   Navigate to the project root directory in your terminal.
-    *   Run the application using the following command:
+To run the server, first ensure you have built it using `mvn clean package`. This will create a shaded JAR in the `target/` directory (e.g., `user-auth-service-1.0-SNAPSHOT.jar` - the `artifactId` from `pom.xml` is used by default).
+
+1.  **Ensure Ludii JAR is Present:** Verify that the `lib/` directory exists at the project root and contains the required `ludii-core.jar` file. **Even with a shaded JAR, system-scoped dependencies like `ludii-core.jar` are often not bundled and must be available relative to where the JAR is run, or the classpath needs to be constructed to find them.**
+    *   *Primary method (using shaded JAR):*
         ```bash
-        java -cp "target/user-auth-service-1.0-SNAPSHOT.jar:lib/*" com.ludii.LudiiServer.Main
+        java -jar target/user-auth-service-1.0-SNAPSHOT.jar
         ```
-        *   **Note:** The JAR filename `user-auth-service-1.0-SNAPSHOT.jar` depends on the `<artifactId>` and `<version>` in your `pom.xml`. Adjust the command if these values are different.
-        *   This command explicitly includes the `lib/*` directory in the classpath so the system-scoped Ludii JARs can be found.
-    *   **Alternative (if using `maven-shade-plugin` or similar to create an uber-JAR):** If the `pom.xml` were configured to build a shaded JAR that includes these local JARs (which it currently is NOT), the command might be simpler:
-        `java -jar target/user-auth-service-1.0-SNAPSHOT-shaded.jar`
-        However, the current setup relies on the classpath argument.
-3.  **Server Port:** The server is configured to start on port `8080` by default (this was changed from Spark's default 4567 in previous steps). You should see log output in the console indicating the server has started. Example:
+        (Note: The JAR filename `user-auth-service-1.0-SNAPSHOT.jar` depends on your project's `<artifactId>` and `<version>`. The `-shaded` suffix is not added by default by `maven-shade-plugin` unless a classifier is specified; it typically replaces the original JAR.)
+        If the system-scoped `ludii-core.jar` is not found (e.g., if it's not in a `lib` directory relative to the shaded JAR at runtime, or if not using an absolute path in `systemPath`), you might need to ensure it's discoverable or use the `-cp` method:
+        ```bash
+        java -cp "target/user-auth-service-1.0-SNAPSHOT.jar:lib/ludii-core.jar" com.ludii.LudiiServer.Main
+        ```
+        This command explicitly includes `lib/ludii-core.jar` in the classpath. (Note: if other non-shaded system JARs were needed, they'd also go here or use `lib/*`).
+    *   *Alternative (Original non-shaded JAR execution, useful for development if shading causes issues):*
+        ```bash
+        # java -cp "target/user-auth-service-1.0-SNAPSHOT.jar:lib/*" com.ludii.LudiiServer.Main
+        ```
+        (This line is now commented out as the shaded JAR is preferred, but kept for reference).
+
+2.  **Server Port:** The server is configured to start on port `8080` by default. You should see log output in the console indicating the server has started. Example:
     ```
     [Thread-1] INFO spark.embeddedserver.jetty.EmbeddedJettyServer - == Spark has ignited ...
     [Thread-1] INFO spark.embeddedserver.jetty.EmbeddedJettyServer - >> Listening on 0.0.0.0:8080
