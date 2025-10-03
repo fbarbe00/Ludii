@@ -106,14 +106,18 @@ public class MainWindowDesktop extends JPanel implements MouseListener, MouseMot
 
 	//-------------------------------------------------------------------------
 
+	private final manager.api.LudiiGameService gameService;
+	private app.views.EvaluationBarView evaluationBarView;
+
 	/**
 	 * Constructor.
 	 */
-	public MainWindowDesktop(final DesktopApp app)
+	public MainWindowDesktop(final DesktopApp app, final manager.api.LudiiGameService gameService)
 	{
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		this.app = app;
+		this.gameService = gameService;
 		zoomBox = new ZoomBox(app, this);
 	}
 
@@ -124,16 +128,16 @@ public class MainWindowDesktop extends JPanel implements MouseListener, MouseMot
 	 */
 	public void createPanels()
 	{
-		MVCSetup.setMVC(app);	
+		MVCSetup.setMVC(app);
 		panels.clear();
 		removeAll();
-		
+
 		final boolean portraitMode = width < height;
-		
+
 		// Create board panel
 		boardPanel = new BoardView(app, false);
 		panels.add(boardPanel);
-		
+
 		// create the player panel
 		playerPanel = new PlayerView(app, portraitMode, false);
 		panels.add(playerPanel);
@@ -148,11 +152,19 @@ public class MainWindowDesktop extends JPanel implements MouseListener, MouseMot
 			tabPanel = new TabView(app, portraitMode);
 			panels.add(tabPanel);
 		}
-		
+
 		// Create overlay panel
 		overlayPanel = new OverlayView(app);
 		panels.add(overlayPanel());
-		
+
+		// Create and add the evaluation bar view
+		evaluationBarView = new app.views.EvaluationBarView(app);
+		if (gameService != null) {
+			gameService.addObserver(evaluationBarView);
+		}
+		evaluationBarView.setPlacement(new Rectangle(0, height - DesktopApp.EVAL_BAR_HEIGHT, width, DesktopApp.EVAL_BAR_HEIGHT));
+		panels.add(evaluationBarView);
+
 		if (SettingsExhibition.exhibitionVersion)
 			app.settingsPlayer().setAnimationType(AnimationVisualsType.Single);
 	}

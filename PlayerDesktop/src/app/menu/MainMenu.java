@@ -695,6 +695,10 @@ public class MainMenu extends JMenuBar
 		menu = new JMenu("Remote");
 		this.add(menu);
 
+		menuItem = new JMenuItem("Join Online Game");
+		menuItem.addActionListener(al);
+		menu.add(menuItem);
+
 		menuItem = new JMenuItem("Remote Play");
 		menuItem.addActionListener(al);
 		menu.add(menuItem);
